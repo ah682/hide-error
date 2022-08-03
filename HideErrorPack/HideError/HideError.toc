@@ -1,5 +1,5 @@
-## Interface: 90205
+## Interface: 90207
 ## Title: HideEror
 ## Notes: Removes Error Speech, Red Text, Fizz Sound
-## Version: 1.1
+## Version: 1.2
 HideError.lua
