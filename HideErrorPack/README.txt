@@ -1,6 +1,6 @@
 READ ME
 ------------------
-#Interface: 90200
+#Interface: 90207
 v1.0
 ------------------
 This addon:
