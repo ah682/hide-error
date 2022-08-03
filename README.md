@@ -1,7 +1,7 @@
 READ ME
 ------------------
-#Interface: 90200
-v1.1
+#Interface: 90270
+v1.2
 ------------------
 This addon:
 Removes Error Dialogue Sound
