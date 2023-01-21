@@ -43,6 +43,9 @@ local version = hideError:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 version:SetPoint("BOTTOM", hideError, 130, 10)
 version:SetText("Updated to version 10.0.2 (100002)");
 
+--Hidden on load
+hideError:Hide()
+
 --Show and hide parent frame on command
 local function ShowHideErrorFrame()
   if hideError:IsShown() then
@@ -55,6 +58,13 @@ local function ShowHideErrorFrame()
 end
 SLASH_HIDEERROR1 = "/hideerror"
 SlashCmdList["HIDEERROR"] = ShowHideErrorFrame
+
+--about
+local function AboutText()
+    print("Addon to Disable Error Sounds and Text type /hideerror to access interface")
+end
+SLASH_ABOUT1 = "/about"
+SlashCmdList["ABOUT"] = ShowHideErrorFrame
 
 --Check Box to Mute All Error Sounds
 local myCheckBox = CreateFrame("CheckButton", "MyCheckBox", hideError, "UICheckButtonTemplate")
@@ -108,5 +118,4 @@ crossButton:SetSize(20, 20) -- set the size of the button
 crossButton:SetPoint("TOPRIGHT", hideError, "TOPRIGHT", -10, -10) -- position the button in the top-right corner of the screen
 crossButton:SetNormalTexture("nil")
 crossButton:SetPushedTexture("nil")
-crossButton:SetVertexColor(1,0,0)
 
