@@ -1,7 +1,7 @@
 READ ME
 ------------------
 #Interface: 100002
-v1.3
+v1.4
 ------------------
 This addon:
 Removes Error Dialogue Sound
