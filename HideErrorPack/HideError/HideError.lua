@@ -7,7 +7,7 @@ Mutes Fizz Sounds Files
 --Print Text in chat on addon load
 local function onAddonLoaded(self, event, addonName)
     if addonName == "HideError" then
-        DEFAULT_CHAT_FRAME:AddMessage("HideError 10.0.2 loaded type /about for info")
+        DEFAULT_CHAT_FRAME:AddMessage("HideError 10.0.5 loaded type /about for info")
     end
 end
 
