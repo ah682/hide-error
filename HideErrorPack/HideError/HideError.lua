@@ -7,7 +7,7 @@ Mutes Fizz Sounds Files
 --Print Text in chat on addon load
 local function onAddonLoaded(self, event, addonName)
     if addonName == "HideError" then
-        DEFAULT_CHAT_FRAME:AddMessage("HideError 10.0.5 loaded type /about for info")
+        DEFAULT_CHAT_FRAME:AddMessage("HideError 10.0.2 loaded type /about for info")
     end
 end
 
@@ -31,7 +31,7 @@ texture:SetColorTexture(0, 0, 0, 0.8)
 local border = hideError:CreateTexture("FrameBorder", "BACKGROUND")
 border:SetColorTexture(1,1,1,0.8)
 border:SetSize(hideError:GetWidth()+2,hideError:GetHeight()+2)
-border:SetPoint("CENTER",myFrame,"CENTER")
+border:SetPoint("CENTER",hideError,"CENTER")
 
 -- Title text frame
 local title = hideError:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -45,6 +45,14 @@ version:SetText("Updated to version 10.0.2 (100002)");
 
 --Hidden on load
 hideError:Hide()
+
+--Makes Frame Movable
+hideError:SetMovable(true)
+hideError:SetClampedToScreen(true)
+hideError:EnableMouse(true)
+hideError:RegisterForDrag("LeftButton")
+hideError:SetScript("OnDragStart", hideError.StartMoving)
+hideError:SetScript("OnDragStop", hideError.StopMovingOrSizing)
 
 --Show and hide parent frame on command
 local function ShowHideErrorFrame()
