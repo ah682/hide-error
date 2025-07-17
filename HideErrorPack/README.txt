@@ -11,4 +11,3 @@ Removes Fizz Sounds
 How to access in client:
 type '/hideerror'
 ------------------
-To remove Fizz Sounds Only Find: https://github.com/ah682/RemoveFizzle
