@@ -1,0 +1,2 @@
+# Preserve the legacy Windows pack's CRLF without treating CR as trailing space.
+HideErrorPack/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
