@@ -1,8 +1,8 @@
 # HideError
 
-A small World of Warcraft add-on by Ava Hall (ah682) for suppressing error text, error speech and selected fizzle sounds. This is a repair of the legacy add-on, with **TOC `Interface: 100005` (10.0.5)** retained. Add-on version **1.5.1** is separate from that client interface number.
+A small World of Warcraft add-on by Ava Hall (ah682) that hides red error text, mutes error speech and silences selected fizzle sounds. You can mute all three or just the fizzle sounds, then turn the mode off to restore your previous settings.
 
-Mode transitions are tested in a Lua harness with explicit WoW API fakes. No live WoW client was tested for this repair; compatibility with current Retail, Classic, combat restrictions and actual sound assets is unverified. Changing the TOC number alone does not establish compatibility.
+Version **1.5.1** retains the original **10.0.5 interface target (`100005`)**. See [compatibility and testing](#compatibility-and-testing) for client checks.
 
 ## Install and use
 
@@ -21,17 +21,17 @@ Enable HideError in the character-selection AddOns list. On a compatible client:
 - **Mute only fizzle sounds** mutes those files while leaving other error text and the error-speech preference at their prior values.
 - Clear the selected checkbox to return to off. Selecting one mode clears the other checkbox.
 
-When leaving the full suppression mode, the add-on restores the error-speech CVar and error-event registration captured immediately before entering it. An already-disabled speech preference stays disabled. Sound files are restored with `UnmuteSoundFile`, without playing a sound. A `PLAYER_LOGOUT` handler requests cleanup as well; its real client timing is untested here. Closing the settings window does not change the selected mode.
+Leaving full suppression restores the error-speech setting and error-event registration captured when you entered it. An already-disabled speech preference stays disabled. Sound files are unmuted without playing them, and `PLAYER_LOGOUT` also requests cleanup. Closing the settings window leaves the selected mode active.
 
-## Limitations
+## Sound settings
 
-The retained FileDataIDs are `569772`, `569774`, `569775` and `569776`. This is a fixed legacy selection, not a guarantee that every fizzle/error sound in every client is covered. Other sound settings, such as master volume and all SFX, are left alone.
+The add-on mutes four legacy FileDataIDs: `569772`, `569774`, `569775` and `569776`. Other fizzle/error sounds may still play. Master volume and other SFX settings are left alone.
 
 There are no SavedVariables: mode selection is not persisted. File muting and CVars affect the client globally. Another add-on muting the same files or changing the same event/CVar can conflict; this code cannot discover ownership of pre-existing file mutes. Leaving suppression unmutes these four files and restores the captured preference, including if it was changed elsewhere while suppression was active. Crashes or forced exits can prevent cleanup. Turn the mode off before disabling/reloading the add-on; if speech remains suppressed, use the client's Audio setting to restore your preferred **Error Speech** value.
 
-The repository includes no current-client certification or automated WoW runtime test. For a live check, record the exact client/build, test off → full → fizzle → off with speech initially both enabled and disabled, verify error text/audio and checkbox states, and test reload/logout cleanup with other add-ons disabled first.
+## Compatibility and testing
 
-## Run the regression harness
+Tests run in Lua with simulated WoW APIs. Current Retail and Classic clients have not been tested. A live client check is still needed for API availability, combat restrictions, audio, rendering and reload/logout timing. For that check, record the client/build and test off → full → fizzle → off with error speech initially enabled and disabled. Check reload/logout cleanup with other add-ons disabled first.
 
 From the repository root, with Lua 5.1–5.4 or LuaJIT installed:
 
@@ -41,10 +41,10 @@ bash ./scripts/test.sh
 LUA=lua5.1 bash ./scripts/test.sh
 ```
 
-The runner also accepts the `rpmlua` embedded runtime as a fallback. Local verification used **Lua 5.3 via rpmlua**: 12 tests passed. The GitHub Actions workflow is configured to run Lua 5.1 and 5.4; hosted results are separate evidence.
+The runner also accepts `rpmlua` as a fallback. The recorded local run passed all 12 tests with **Lua 5.3 via rpmlua**. GitHub Actions runs the harness with Lua 5.1 and 5.4.
 
-The harness loads the real add-on and invokes its registered click, slash-command and event callbacks in a fresh environment per test. It checks both directions of mode switching, restoration of original preferences/event registration, repeat selection, file unmuting without playback, logout cleanup, `/about`, window toggling and the add-on-loaded message. Its simulated frames, CVars and file-mute state establish the requested API effects only; they cannot establish actual game audio, UI rendering or client API availability.
+The harness loads the add-on in a fresh environment for each test and invokes its click, slash-command and event callbacks. It checks both directions of mode switching, restoration of preferences and event registration, repeat selection, unmuting without playback, logout cleanup, `/about`, window toggling and the load message.
 
-The use of `UnmuteSoundFile` follows the independent [MuteSoundFile add-on's removal implementation](https://github.com/funkydude/MuteSoundFile/blob/master/Options/Options.lua#L164-L198); Blizzard's [audio UI source mirror](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_SettingsDefinitions_Shared/Audio.lua#L454-L463) treats `Sound_EnableErrorSpeech` as a user preference. These references informed the repair; no third-party code or dependencies are bundled.
+The [MuteSoundFile add-on](https://github.com/funkydude/MuteSoundFile/blob/master/Options/Options.lua#L164-L198) provided a reference for `UnmuteSoundFile`, and Blizzard's [audio UI source mirror](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_SettingsDefinitions_Shared/Audio.lua#L454-L463) documents `Sound_EnableErrorSpeech` as a user preference.
 
 For a separate fizzle-only project, see [RemoveFizzle](https://github.com/ah682/RemoveFizzle).
