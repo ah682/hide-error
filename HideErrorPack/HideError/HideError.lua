@@ -4,15 +4,22 @@ Sets Error Speech to Mute
 Mutes Fizz Sounds Files
 ]]
 
+-- One mode owns the temporary client changes. See README for the legacy target.
+local setMode
+
 --Print Text in chat on addon load
 local function onAddonLoaded(self, event, addonName)
     if addonName == "HideError" then
-        DEFAULT_CHAT_FRAME:AddMessage("HideError 10.0.2 loaded type /about for info")
+        DEFAULT_CHAT_FRAME:AddMessage("HideError 1.5.1 loaded: /hideerror for settings, /about for info")
+    elseif event == "PLAYER_LOGOUT" and setMode then
+        -- CVars and sound-file muting can outlive this Lua environment.
+        setMode("off")
     end
 end
 
 local frame = CreateFrame("FRAME")
 frame:RegisterEvent("ADDON_LOADED")
+frame:RegisterEvent("PLAYER_LOGOUT")
 frame:SetScript("OnEvent", onAddonLoaded)
 
 -- Create main frame hold addon interface
@@ -41,7 +48,7 @@ title:SetText("Hide Error Addon Interface")
 -- Version Text
 local version = hideError:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 version:SetPoint("BOTTOM", hideError, 130, 10)
-version:SetText("Updated to version 10.0.2 (100002)");
+version:SetText("HideError 1.5.1 - legacy Interface 100005");
 
 --Hidden on load
 hideError:Hide()
@@ -72,14 +79,14 @@ local function AboutText()
     print("Addon to Disable Error Sounds and Text type /hideerror to access interface")
 end
 SLASH_ABOUT1 = "/about"
-SlashCmdList["ABOUT"] = ShowHideErrorFrame
+SlashCmdList["ABOUT"] = AboutText
 
 --Check Box to Mute All Error Sounds
 local myCheckBox = CreateFrame("CheckButton", "MyCheckBox", hideError, "UICheckButtonTemplate")
 myCheckBox:SetSize(40, 40)
 myCheckBox:SetPoint("TOP", hideError, -200 , -70)
 myCheckBox:SetChecked(false)
-myCheckBox.text:SetText("Mute all error sounds")
+myCheckBox.text:SetText("Mute error text, speech and fizzle")
 
 --Check Box to Mute Fizzle Sounds
 local myCheckBox2 = CreateFrame("CheckButton", "MyCheckBox2", hideError, "UICheckButtonTemplate")
@@ -88,36 +95,50 @@ myCheckBox2:SetPoint("TOP", hideError, -200 , -140)
 myCheckBox2:SetChecked(false)
 myCheckBox2.text:SetText("Mute only fizzle sounds")
 
---On Click Mute All Button on Click and Unmute
-myCheckBox:SetScript("OnClick", function()
-  if myCheckBox:GetChecked() then
-    print("All error sounds are muted.")
-    UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE");
-    SetCVar("Sound_EnableErrorSpeech", "0");
-    myCheckBox2:SetChecked(false)
-  else
-    print("All error sounds are unmuted.")
-    UIErrorsFrame:RegisterEvent("UI_ERROR_MESSAGE");
-    SetCVar("Sound_EnableErrorSpeech", "1");
+-- Muting sound files is global to the client. We only undo the four files
+-- this add-on muted; another add-on using the same files can still conflict.
+local fizzleFiles = {569772, 569774, 569775, 569776}
+local mode = "off"
+local savedSpeech, savedErrorEvent
+
+setMode = function(nextMode)
+  if nextMode == mode then return end
+
+  if mode == "all" then
+    -- Restore the preference/registration observed immediately before suppression.
+    SetCVar("Sound_EnableErrorSpeech", savedSpeech)
+    if savedErrorEvent then
+      UIErrorsFrame:RegisterEvent("UI_ERROR_MESSAGE")
+    end
+    savedSpeech, savedErrorEvent = nil, nil
   end
+
+  if nextMode == "all" then
+    savedSpeech = GetCVar("Sound_EnableErrorSpeech")
+    savedErrorEvent = UIErrorsFrame:IsEventRegistered("UI_ERROR_MESSAGE")
+    UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE")
+    SetCVar("Sound_EnableErrorSpeech", "0")
+  end
+
+  -- All and fizzle both suppress these files. Switching between them must
+  -- preserve the mute; exiting either must unmute, never play a sound.
+  if mode == "off" and nextMode ~= "off" then
+    for _, fileID in ipairs(fizzleFiles) do MuteSoundFile(fileID) end
+  elseif mode ~= "off" and nextMode == "off" then
+    for _, fileID in ipairs(fizzleFiles) do UnmuteSoundFile(fileID) end
+  end
+
+  mode = nextMode
+  myCheckBox:SetChecked(mode == "all")
+  myCheckBox2:SetChecked(mode == "fizzle")
+end
+
+myCheckBox:SetScript("OnClick", function(self)
+  setMode(self:GetChecked() and "all" or "off")
 end)
 
---Mute Error Sound Button on Click and Unmute
-myCheckBox2:SetScript("OnClick", function()
-  if myCheckBox2:GetChecked() then
-    print("Fizzle sounds are muted.")
-    MuteSoundFile(569772)
-    MuteSoundFile(569774)
-    MuteSoundFile(569775)
-    MuteSoundFile(569776)
-    myCheckBox:SetChecked(false)
-  else
-    print("Fizzle sounds are unmuted.")
-    PlaySound(569772)
-    PlaySound(569774)
-    PlaySound(569775)
-    PlaySound(569776)
-  end
+myCheckBox2:SetScript("OnClick", function(self)
+  setMode(self:GetChecked() and "fizzle" or "off")
 end)
 
 --X Button Created

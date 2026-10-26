@@ -1,5 +1,6 @@
 ## Interface: 100005
-## Title: HideEror
+## Title: HideError
+## Author: Ava Hall (ah682)
 ## Notes: Removes Error Speech, Red Text, Fizz Sound
-## Version: 1.5
+## Version: 1.5.1
 HideError.lua

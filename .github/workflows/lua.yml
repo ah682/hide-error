@@ -1,0 +1,22 @@
+name: Lua add-on regression harness
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  mode-transitions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lua: ['lua5.1', 'lua5.4']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.lua }}
+      - name: Exercise the add-on with explicit WoW API fakes
+        env:
+          LUA: ${{ matrix.lua }}
+        run: bash ./scripts/test.sh
